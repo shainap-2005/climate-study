@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Climate Experiment</title>
+  <script src="https://unpkg.com/jspsych@7.3.0"></script>
+  <script src="https://unpkg.com/@jspsych/plugin-html-keyboard-response"></script>
+  <script src="https://unpkg.com/@jspsych/plugin-survey-text"></script>
+  <script src="https://unpkg.com/@jspsych/plugin-survey-likert"></script>
+  <script src="https://unpkg.com/@jspsych/plugin-survey-html-form"></script>
+  <script src="https://unpkg.com/@jspsych/plugin-instructions"></script>
+  <style>
+    html, body { height: 100%; margin: 0; }
+    body { font-family: sans-serif; background-color: #f8f8f8; text-align: center; }
+    .center-screen {
+      display: flex; align-items: center; justify-content: center;
+      height: 90vh; font-size: 28px; line-height: 1.4;
+    }
+    .small-note { font-size: 16px; opacity: .7; margin-top: 12px; }
+  </style>
+</head>
+<body>
+  <div id="jspsych-target"></div>
+
+  <script>
+    // ==== CONFIG: year range ====
+    const YEAR_START = 1981;
+    const YEAR_END   = 2020;
+
+    const jsPsych = initJsPsych({
+      on_finish: () => jsPsych.data.displayData(),
+    });
+
+    const timeline = [];
+
+    // === Intro ===
+    timeline.push({
+      type: jsPsychInstructions,
+      pages: [
+        `<div class="center-screen"><div>
+          <h2>Welcome!</h2>
+          <p>You'll see how climate changed in a fictional town.</p>
+        </div></div>`,
+        `<div class="center-screen"><div>
+          <p>Data appears <strong>one year at a time</strong> and disappears. Please pay attention to the trend.</p>
+          <p class="small-note">There will be a short memory check (a word to remember) halfway through.</p>
+        </div></div>`,
+        `<div class="center-screen"><div>
+          <p>At the end, you'll answer a few questions.</p>
+          <p>Click "Next" to begin.</p>
+        </div></div>`
+      ],
+      show_clickable_nav: true
+    });
+
+    // === Balanced condition assignment ===
+    const dataset_files = [
+      "binary_0.243148164557317_.csv",
+      "binary_0.496276430097968_.csv",
+      "binary_0.670408510834097_.csv",
+      "continuous_0.243148164557317_.csv",
+      "continuous_0.496276430097968_.csv",
+      "continuous_0.670408510834097_.csv"
+    ];
+
+    let chosen_file = localStorage.getItem("climate_chosen_file");
+    let condition   = localStorage.getItem("climate_condition");
+
+    if (!chosen_file || !condition) {
+      const counts = JSON.parse(localStorage.getItem("climate_cond_counts") || '{"bin":0,"cont":0}');
+      if (counts.bin < counts.cont) {
+        condition = "binary";
+      } else if (counts.cont < counts.bin) {
+        condition = "continuous";
+      } else {
+        condition = Math.random() < 0.5 ? "binary" : "continuous";
+      }
+      const candidates = dataset_files.filter(f => f.startsWith(condition));
+      chosen_file = jsPsych.randomization.sampleWithoutReplacement(candidates, 1)[0];
+
+      localStorage.setItem("climate_chosen_file", chosen_file);
+      localStorage.setItem("climate_condition", condition);
+      const newCounts = { ...counts };
+      if (condition === "binary") newCounts.bin++; else newCounts.cont++;
+      localStorage.setItem("climate_cond_counts", JSON.stringify(newCounts));
+    }
+
+    const is_binary = condition === "binary";
+    console.log("Chosen:", { condition, chosen_file, YEAR_START, YEAR_END });
+
+    // === Condition announcement ===
+    timeline.push({
+      type: jsPsychHtmlKeyboardResponse,
+      stimulus:
+        `<div class="center-screen"><div>
+          <p>You will view <strong>${is_binary ? "Lake Freeze (Binary)" : "Winter Temperature (Continuous)"}</strong> data.</p>
+          <p class="small-note">Years shown: ${YEAR_START}–${YEAR_END}. Press any key to begin.</p>
+        </div></div>`
+    });
+
+    // === Load and parse the CSV ===
+    fetch(chosen_file)
+      .then(r => {
+        if (!r.ok) throw new Error(`Could not load ${chosen_file} (status ${r.status})`);
+        return r.text();
+      })
+      .then(csvText => {
+        const lines = csvText.trim().split("\n");
+        // If the first row is a header like "year,value", drop it by checking if it contains non-numeric first cell
+        const rawRows = lines.map(line => line.split(","));
+        const bodyRows = rawRows[0] && isNaN(parseInt(rawRows[0][0], 10))
+          ? rawRows.slice(1)
+          : rawRows;
+
+        // --- Filter to configured year range ---
+        const rows = bodyRows
+          .map(r => [r[0]?.trim(), r[1]?.trim()])
+          .filter(([y, v]) => {
+            const yr = parseInt(y, 10);
+            return Number.isFinite(yr) && yr >= YEAR_START && yr <= YEAR_END && v !== undefined && v !== "";
+          })
+          .sort((a, b) => parseInt(a[0], 10) - parseInt(b[0], 10)); // ensure ascending years
+
+        if (rows.length === 0) {
+          throw new Error(`No data rows found between ${YEAR_START} and ${YEAR_END}. Check your CSV.`);
+        }
+
+        const yearsAvailable = rows.map(r => parseInt(r[0], 10));
+        const halfwayIndex = Math.floor(rows.length / 2);
+
+        // --- Attention words instead of numbers ---
+        const attentionWords = ["apple", "house", "tree", "book", "dog"];
+        const attentionWord  = attentionWords[Math.floor(Math.random() * attentionWords.length)];
+
+        // sequential datapoints within configured range
+        rows.forEach((row, index) => {
+          const year  = row[0];
+          const value = row[1];
+          let display;
+
+          if (is_binary) {
+            display = `Year: ${year} | Lake Freeze: ${value}`;
+          } else {
+            const celsius    = parseFloat(value);
+            const fahrenheit = (celsius * 9/5 + 32).toFixed(1);
+            display = `Year: ${year} | Avg Temp: ${fahrenheit}°F`;
+          }
+
+          if (index === halfwayIndex) {
+            timeline.push({
+              type: jsPsychHtmlKeyboardResponse,
+              stimulus:
+                `<div class="center-screen"><div>
+                   <p><strong>Attention Check</strong></p>
+                   <p>Please remember this word:</p>
+                   <p style="font-size:48px; margin: 10px 0;"><strong>${attentionWord}</strong></p>
+                   <p class="small-note">You'll be asked for it at the end.</p>
+                 </div></div>`,
+              choices: "NO_KEYS",
+              trial_duration: 3000,
+              data: { trial_type: "attention_word_display", attention_word: attentionWord }
+            });
+          }
+
+          timeline.push({
+            type: jsPsychHtmlKeyboardResponse,
+            stimulus: `<div class="center-screen"><div>${display}</div></div>`,
+            choices: "NO_KEYS",
+            trial_duration: 2000,
+            data: { trial_type: "datapoint", index, year, value }
+          });
+        });
+
+        // === Likert ===
+        timeline.push({
+          type: jsPsychSurveyLikert,
+          preamble: "<h3>Perceptions of Climate Change</h3>",
+          questions: [
+            {
+              prompt: "How would you rate the impact climate change has had on the town?",
+              labels: ["None", "Slight", "Moderate", "Strong", "Extreme"],
+              required: true,
+              name: "impact_rating"
+            },
+            {
+              prompt: "Did you notice any trend or pattern over time?",
+              labels: ["Not at all", "Slightly", "Somewhat", "Clearly", "Extremely clearly"],
+              required: true,
+              name: "trend_clarity"
+            }
+          ],
+          data: { trial_type: "perception_ratings" }
+        });
+
+        // === Changepoint ===
+        timeline.push({
+          type: jsPsychSurveyHtmlForm,
+          preamble: `<h3>Changepoint Detection</h3>
+                     <p>At what year did you first notice a major shift or trend in the data?</p>
+                     <p class="small-note">Years shown in this run: ${YEAR_START}–${YEAR_END}</p>`,
+          html: `
+            <label for="changepoint">Select a year:</label>
+            <select name="changepoint" required>
+              <option value="">-- Select a year --</option>
+              ${yearsAvailable.map(y => `<option value="${y}">${y}</option>`).join("")}
+            </select>
+          `,
+          data: { trial_type: "changepoint_detection" }
+        });
+
+        // === Attention recall ===
+        timeline.push({
+          type: jsPsychSurveyText,
+          preamble: "<h3>Memory Check</h3>",
+          questions: [
+            { prompt: "What word was shown earlier?", name: "attention_recall", required: true }
+          ],
+          on_finish: (data) => {
+            try {
+              const resp = JSON.parse(data.responses).attention_recall || "";
+              data.trial_type = "attention_recall";
+              data.attention_word = attentionWord;
+              data.correct = String(resp).trim().toLowerCase() === attentionWord.toLowerCase();
+            } catch (_) {}
+          }
+        });
+
+        // === Save/download + send to Mongo (tutorial route) ===
+        timeline.push({
+          type: jsPsychHtmlKeyboardResponse,
+          stimulus: `<div class="center-screen"><div>
+            <p>You're done! Press any key to download your results and save them.</p>
+            <p class="small-note" id="save-status"></p>
+          </div></div>`,
+          on_finish: async function () {
+            const fname = `climate_results_${is_binary ? "binary" : "continuous"}_${YEAR_START}-${YEAR_END}.csv`;
+            jsPsych.data.get().localSave("csv", fname);
+
+            const payload = {
+              meta: {
+                condition: is_binary ? "binary" : "continuous",
+                dataset_file: chosen_file,
+                finished_at: new Date().toISOString(),
+                user_agent: navigator.userAgent || null,
+                year_start: YEAR_START,
+                year_end: YEAR_END
+              },
+              json: jsPsych.data.get().values(),
+              csv: jsPsych.data.get().csv()
+            };
+
+            const statusEl = document.getElementById("save-status");
+            try {
+              const res = await fetch("/experiment-data", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+              });
+              const json = await res.json();
+              if (!json.ok) throw new Error(json.error || "Unknown error");
+              if (statusEl) statusEl.textContent = "Saved to database ✔";
+            } catch (err) {
+              console.error("Save failed:", err);
+              if (statusEl) statusEl.textContent =
+                "Could not save to database (still downloaded CSV).";
+            }
+          }
+        });
+
+        // Run it all
+        jsPsych.run(timeline);
+      })
+      .catch(error => {
+        document.getElementById("jspsych-target").innerHTML =
+          `<p>Error loading CSV "${chosen_file}": ${error.message}</p>`;
+        console.error(error);
+      });
+  </script>
+</body>
+</html>
