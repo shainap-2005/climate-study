@@ -3,7 +3,13 @@ const express = require("express");
 const cors = require("cors");
 const path = require("path");
 const mongoose = require("mongoose");
-require("dotenv").config();
+if (process.env.NODE_ENV !== 'production') {
+  try {
+    require('dotenv').config();
+  } catch (error) {
+    console.log('dotenv not found - using environment variables directly');
+  }
+}
 
 const app = express();
 app.use(cors());
@@ -15,7 +21,7 @@ const COLL_NAME   = process.env.COLL_NAME || "runs";
 const PORT        = process.env.PORT || 3000;
 
 if (!MONGODB_URI) {
-  console.error("❌ Missing MONGODB_URI in .env");
+  console.error("Missing MONGODB_URI in .env");
   process.exit(1);
 }
 
