@@ -75,3 +75,6 @@ app.listen(PORT, () => {
   console.log(`🚀 Server running at http://localhost:${PORT}`);
   console.log(`🗄️  Writing to ${DB_NAME}.${COLL_NAME}`);
 });
+
+public/views/sequential_climate.html
+
