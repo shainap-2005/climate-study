@@ -104,7 +104,7 @@
     // === Load and parse the CSV ===
     fetch(chosen_file)
       .then(r => {
-        if (!r.ok) throw new Error(\`Could not load ${chosen_file} (status \${r.status})\`);
+        if (!r.ok) throw new Error(`Could not load ${chosen_file} (status ${r.status})`);
         return r.text();
       })
       .then(csvText => {
@@ -223,7 +223,7 @@
           on_finish: async function () {
             // local download (optional)
             jsPsych.data.get().localSave("csv",
-              \`climate_results_\${is_binary ? "binary" : "continuous"}_\${YEAR_START}-\${YEAR_END}.csv\`
+              `climate_results_${is_binary ? "binary" : "continuous"}_${YEAR_START}-${YEAR_END}.csv`
             );
 
             // send to your server
