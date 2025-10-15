@@ -27,269 +27,161 @@
   <script>
     console.log("✅ sequential_climate.html loaded");
 
-    // === Consent form screen ===
-    document.getElementById("jspsych-target").innerHTML = `
-      <iframe src="consent_form.html" width="100%" height="800px" style="border:none;"></iframe>
-      <div style="text-align:center; margin-top:20px;">
-        <button id="start-exp" style="
-          background:#0066cc; color:white; padding:12px 24px; border:none;
-          border-radius:6px; font-size:16px; cursor:pointer;">I Agree — Start Experiment</button>
-      </div>
-    `;
+    // ==== CONFIG ====
+    const YEAR_START = 1981;
+    const YEAR_END   = 2020;
 
-    // Wait for click to start jsPsych
-    document.getElementById("start-exp").addEventListener("click", function() {
-      document.getElementById("jspsych-target").innerHTML = ""; // clear consent
-      startExperiment(); // call jsPsych timeline
+    // Initialize jsPsych
+    const jsPsych = initJsPsych({
+      display_element: "jspsych-target",
+      // final saving happens in the last trial's on_finish below
     });
 
-    function startExperiment() {
+    const timeline = [];
 
-      const YEAR_START = 1981;
-      const YEAR_END   = 2020;
+    // === Intro ===
+    timeline.push({
+      type: jsPsychInstructions,
+      pages: [
+        `<div class="center-screen"><div>
+          <h2>Welcome!</h2>
+          <p>In this experiment you will be given some information about a fictional town named "Townsville".</p>
+        </div></div>`,
+        `<div class="center-screen"><div>
+        <p>Townsville is a winter town. During the holiday season, Townsville is known for its chilly, low winter temperatures. Historically, its local lake has attracted tourists for ice-skating during the holiday months. </p>
+        <p>Click "Next" to continue.</p></div></div>`,
+      ],
+      show_clickable_nav: true
+    });
 
-      const jsPsych = initJsPsych({
-        display_element: "jspsych-target",
-      });
+    // === Balanced condition assignment ===
+    const dataset_files = [
+      "binary_0.243148164557317_.csv",
+      "binary_0.496276430097968_.csv",
+      "binary_0.670408510834097_.csv",
+      "continuous_0.243148164557317_.csv",
+      "continuous_0.496276430097968_.csv",
+      "continuous_0.670408510834097_.csv"
+    ];
 
-      const timeline = [];
+    let chosen_file = localStorage.getItem("climate_chosen_file");
+    let condition   = localStorage.getItem("climate_condition");
 
-      // === Intro ===
-      timeline.push({
-        type: jsPsychInstructions,
-        pages: [
-          `<div class="center-screen"><div>
-            <h2>Welcome!</h2>
-            <p>In this experiment you will be given some information about a fictional town named "Townsville".</p>
-          </div></div>`,
-          `<div class="center-screen"><div>
-          <p>Townsville is a winter town. During the holiday season, Townsville is known for its chilly, low winter temperatures. Historically, its local lake has attracted tourists for ice-skating during the holiday months. </p>
-          <p>Click "Next" to continue.</p></div></div>`,
-        ],
-        show_clickable_nav: true
-      });
+    if (!chosen_file || !condition) {
+      const counts = JSON.parse(localStorage.getItem("climate_cond_counts") || '{"bin":0,"cont":0}');
+      if (counts.bin < counts.cont) condition = "binary";
+      else if (counts.cont < counts.bin) condition = "continuous";
+      else condition = Math.random() < 0.5 ? "binary" : "continuous";
 
-      // === Balanced condition assignment ===
-      const dataset_files = [
-        "binary_0.243148164557317_.csv",
-        "binary_0.496276430097968_.csv",
-        "binary_0.670408510834097_.csv",
-        "continuous_0.243148164557317_.csv",
-        "continuous_0.496276430097968_.csv",
-        "continuous_0.670408510834097_.csv"
-      ];
+      const candidates = dataset_files.filter(f => f.startsWith(condition));
+      chosen_file = jsPsych.randomization.sampleWithoutReplacement(candidates, 1)[0];
 
-      let chosen_file = localStorage.getItem("climate_chosen_file");
-      let condition   = localStorage.getItem("climate_condition");
+      localStorage.setItem("climate_chosen_file", chosen_file);
+      localStorage.setItem("climate_condition", condition);
+      const newCounts = { ...counts };
+      if (condition === "binary") newCounts.bin++; else newCounts.cont++;
+      localStorage.setItem("climate_cond_counts", JSON.stringify(newCounts));
+    }
 
-      if (!chosen_file || !condition) {
-        const counts = JSON.parse(localStorage.getItem("climate_cond_counts") || '{"bin":0,"cont":0}');
-        if (counts.bin < counts.cont) condition = "binary";
-        else if (counts.cont < counts.bin) condition = "continuous";
-        else condition = Math.random() < 0.5 ? "binary" : "continuous";
+    const is_binary = condition === "binary";
+    console.log("Chosen:", { condition, chosen_file, YEAR_START, YEAR_END });
 
-        const candidates = dataset_files.filter(f => f.startsWith(condition));
-        chosen_file = jsPsych.randomization.sampleWithoutReplacement(candidates, 1)[0];
+    // Condition announcement
+    timeline.push({
+      type: jsPsychHtmlKeyboardResponse,
+      stimulus:
+        `<div class="center-screen"><div>
+          <p>In the next screens, you will see a sequence of data that will show ${is_binary ? "<strong>whether or not the lake of Townsville froze</strong> for a particular year." : "<strong>the average winter temperature</strong> for a particular year".}</p> <p> ${is_binary ? "A year which says YES means that the lake froze over completely and was deemed safe for ice skating. A year which says NO means the lake did not freeze completely." : "The average winter temperature is taken by averaging the daily temperature in Fahrenheit over the months: November, December, and January."}.</p>
+          <p><strong>Important:</strong> Data will be shown to you <strong>one year at a time</strong> from 1980-2020 and will disappear. Each datapoint will be shown to you for <strong> only 1 second before disappearing</strong>. We request you to please pay attention to the trend as much as possible.</p>
+          <p>Press any key to begin the experiment.</p>
+        </div></div>`
+    });
 
-        localStorage.setItem("climate_chosen_file", chosen_file);
-        localStorage.setItem("climate_condition", condition);
-        const newCounts = { ...counts };
-        if (condition === "binary") newCounts.bin++; else newCounts.cont++;
-        localStorage.setItem("climate_cond_counts", JSON.stringify(newCounts));
-      }
+    // === Load and parse the CSV ===
+    fetch(chosen_file)
+      .then(r => {
+        if (!r.ok) throw new Error(`Could not load ${chosen_file} (status ${r.status})`);
+        return r.text();
+      })
+      .then(csvText => {
+        const lines = csvText.trim().split("\n");
+        const rawRows = lines.map(line => line.split(","));
+        const bodyRows = rawRows[0] && isNaN(parseInt(rawRows[0][0], 10)) ? rawRows.slice(1) : rawRows;
 
-      const is_binary = condition === "binary";
-      console.log("Chosen:", { condition, chosen_file, YEAR_START, YEAR_END });
+        const rows = bodyRows
+          .map(r => [r[0]?.trim(), r[1]?.trim()])
+          .filter(([y, v]) => {
+            const yr = parseInt(y, 10);
+            return Number.isFinite(yr) && yr >= YEAR_START && yr <= YEAR_END && v !== undefined && v !== "";
+          })
+          .sort((a, b) => parseInt(a[0], 10) - parseInt(b[0], 10));
 
-      // === Instructions ===
-      timeline.push({
-        type: jsPsychHtmlKeyboardResponse,
-        stimulus:
-          `<div class="center-screen"><div>
-            <p>In the next screens, you will see a sequence of data that will show ${is_binary ? "<strong>whether or not the lake of Townsville froze</strong> for a particular year." : "<strong>the average winter temperature</strong> for a particular year".}</p> <p> ${is_binary ? "A year which says YES means that the lake froze over completely and was deemed safe for ice skating. A year which says NO means the lake did not freeze completely." : "The average winter temperature is taken by averaging the daily temperature in Fahrenheit over the months: November, December, and January."}.</p>
-            <p><strong>Important:</strong> Data will be shown to you <strong>one year at a time</strong> from 1980–2020 and will disappear. Each datapoint will be shown to you for <strong>only 1 second before disappearing</strong>. Please pay attention to the trend.</p>
-            <p>Press any key to begin the experiment.</p>
-          </div></div>`
-      });
+        if (rows.length === 0) throw new Error(`No data rows found between ${YEAR_START} and ${YEAR_END}.`);
 
-      // === Load and parse the CSV ===
-      fetch(chosen_file)
-        .then(r => {
-          if (!r.ok) throw new Error(`Could not load ${chosen_file} (status ${r.status})`);
-          return r.text();
-        })
-        .then(csvText => {
-          const lines = csvText.trim().split("\n");
-          const rawRows = lines.map(line => line.split(","));
-          const bodyRows = rawRows[0] && isNaN(parseInt(rawRows[0][0], 10)) ? rawRows.slice(1) : rawRows;
+        const yearsAvailable = rows.map(r => parseInt(r[0], 10));
+        const halfwayIndex = Math.floor(rows.length / 2);
 
-          const rows = bodyRows
-            .map(r => [r[0]?.trim(), r[1]?.trim()])
-            .filter(([y, v]) => {
-              const yr = parseInt(y, 10);
-              return Number.isFinite(yr) && yr >= YEAR_START && yr <= YEAR_END && v !== undefined && v !== "";
-            })
-            .sort((a, b) => parseInt(a[0], 10) - parseInt(b[0], 10));
+        const attentionWords = ["apple", "house", "tree", "book", "dog"];
+        const attentionWord  = attentionWords[Math.floor(Math.random() * attentionWords.length)];
 
-          if (rows.length === 0) throw new Error(`No data rows found between ${YEAR_START} and ${YEAR_END}.`);
+        // sequential datapoints
+        rows.forEach((row, index) => {
+          const year  = row[0];
+          const value = row[1];
+          let display;
 
-          const yearsAvailable = rows.map(r => parseInt(r[0], 10));
-          const halfwayIndex = Math.floor(rows.length / 2);
-          const attentionWords = ["apple", "house", "tree", "book", "dog"];
-          const attentionWord  = attentionWords[Math.floor(Math.random() * attentionWords.length)];
+          if (is_binary) {
+            display = `Year: ${year} | Lake Freeze: ${value}`;
+          } else {
+            const celsius    = parseFloat(value);
+            const fahrenheit = (celsius * 9/5 + 32).toFixed(1);
+            display = `Year: ${year} | Avg Temp: ${fahrenheit}°F`;
+          }
 
-          // sequential datapoints
-          rows.forEach((row, index) => {
-            const year  = row[0];
-            const value = row[1];
-            let display;
-
-            if (is_binary) {
-              display = `Year: ${year} | Lake Freeze: ${value}`;
-            } else {
-              const celsius    = parseFloat(value);
-              const fahrenheit = (celsius * 9/5 + 32).toFixed(1);
-              display = `Year: ${year} | Avg Temp: ${fahrenheit}°F`;
-            }
-
-            if (index === halfwayIndex) {
-              timeline.push({
-                type: jsPsychHtmlKeyboardResponse,
-                stimulus:
-                  `<div class="center-screen"><div>
-                    <p><strong>Attention Check</strong></p>
-                    <p>Please remember this word:</p>
-                    <p style="font-size:48px; margin: 10px 0;"><strong>${attentionWord}</strong></p>
-                    <p class="small-note">You'll be asked for it later.</p>
-                  </div></div>`,
-                choices: "NO_KEYS",
-                trial_duration: 3000,
-                data: { trial_type: "attention_word_display", attention_word: attentionWord }
-              });
-            }
-
+          if (index === halfwayIndex) {
             timeline.push({
               type: jsPsychHtmlKeyboardResponse,
-              stimulus: `<div class="center-screen"><div>${display}</div></div>`,
+              stimulus:
+                `<div class="center-screen"><div>
+                   <p><strong>Attention Check</strong></p>
+                   <p>Please remember this word:</p>
+                   <p style="font-size:48px; margin: 10px 0;"><strong>${attentionWord}</strong></p>
+                   <p class="small-note">You'll be asked for it at the end.</p>
+                 </div></div>`,
               choices: "NO_KEYS",
-              trial_duration: 2000,
-              data: { trial_type: "datapoint", index, year, value }
+              trial_duration: 3000,
+              data: { trial_type: "attention_word_display", attention_word: attentionWord }
             });
-          });
+          }
 
-          // Likert
-          timeline.push({
-            type: jsPsychSurveyLikert,
-            preamble: "<h3>Perceptions of Climate Change</h3>",
-            questions: [
-              { prompt: "How much do you think the temperature of the town has changed in the last 40 years?",
-                labels: ['1 (same)', '', '', '', '', '', '', '', '', '10 (changed a lot)'],
-                required: true, name: "temperature impact_rating" },
-              { prompt: "How much do you think the frequency of lake freezing has changed in the last 40 years?",
-                labels: ['1 (same)', '', '', '', '', '', '', '', '', '10 (changed a lot)'],
-                required: true, name: "freeze impact_rating" },
-              { prompt: "How much do you think Townsville has been affected by climate change?",
-                labels: ['1 (not at all)', '', '', '', '', '', '', '', '', '10 (extremely)'],
-                required: true, name: "climate impact_rating" },
-            ],
-            data: { trial_type: "perception_ratings" }
-          });
-
-          // Changepoint detection
-          timeline.push({
-            type: jsPsychSurveyHtmlForm,
-            preamble: `<h3>Changepoint Detection</h3>
-                       <p>At what year did you first notice a major shift or trend in the data?</p>
-                       <p class="small-note">Years shown: ${YEAR_START}–${YEAR_END}</p>`,
-            html: `
-              <label for="changepoint">Select a year:</label>
-              <select name="changepoint" required>
-                <option value="">-- Select a year --</option>
-                ${yearsAvailable.map(y => `<option value="${y}">${y}</option>`).join("")}
-              </select>
-            `,
-            data: { trial_type: "changepoint_detection" }
-          });
-
-          // Attention recall
-          timeline.push({
-            type: jsPsychSurveyText,
-            preamble: "<h3>Memory Check</h3>",
-            questions: [{ prompt: "What word was shown earlier?", name: "attention_recall", required: true }],
-            on_finish: (data) => {
-              try {
-                const resp = JSON.parse(data.responses).attention_recall || "";
-                data.trial_type = "attention_recall";
-                data.attention_word = attentionWord;
-                data.correct = String(resp).trim().toLowerCase() === attentionWord.toLowerCase();
-              } catch (_) {}
-            }
-          });
-
-          // Save & finish
           timeline.push({
             type: jsPsychHtmlKeyboardResponse,
-            stimulus: `<div class="center-screen"><div>
-              <p>You're done! Press any key to download your results and save them.</p>
-              <p class="small-note" id="save-status"></p>
-            </div></div>`,
-            on_finish: async function () {
-              // local download
-              jsPsych.data.get().localSave("csv",
-                `climate_results_${is_binary ? "binary" : "continuous"}_${YEAR_START}-${YEAR_END}.csv`
-              );
-
-              // send to your server
-              const payload = {
-                meta: {
-                  condition: is_binary ? "binary" : "continuous",
-                  dataset_file: chosen_file,
-                  finished_at: new Date().toISOString(),
-                  user_agent: navigator.userAgent || null,
-                  year_start: YEAR_START,
-                  year_end: YEAR_END
-                },
-                json: jsPsych.data.get().values(),
-                csv: jsPsych.data.get().csv()
-              };
-
-              const statusEl = document.getElementById("save-status");
-              try {
-                const res = await fetch("/experiment-data", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify(payload)
-                });
-                const out = await res.json();
-                if (!out.ok) throw new Error(out.error || "Unknown error");
-                if (statusEl) statusEl.textContent = "Saved to database ✔";
-
-                // ✅ Show debriefing page
-                document.getElementById("jspsych-target").innerHTML = `
-                  <iframe src="debriefing.html" width="100%" height="800px" style="border:none;"></iframe>
-                  <div style="text-align:center; margin-top:20px;">
-                    <button onclick="window.location.href='/finish'"
-                            style="background:#003B5C; color:white; padding:12px 24px; border:none;
-                                   border-radius:6px; font-size:16px; cursor:pointer;">
-                      Exit
-                    </button>
-                  </div>
-                `;
-              } catch (err) {
-                console.error("Save failed:", err);
-                if (statusEl) statusEl.textContent = "Could not save to database (CSV still downloaded).";
-              }
-            }
+            stimulus: `<div class="center-screen"><div>${display}</div></div>`,
+            choices: "NO_KEYS",
+            trial_duration: 2000,
+            data: { trial_type: "datapoint", index, year, value }
           });
-
-          jsPsych.run(timeline);
-        })
-        .catch(error => {
-          document.getElementById("jspsych-target").innerHTML =
-            `<p style="color:#b00">Error loading CSV "<b>${chosen_file}</b>": ${error.message}</p>`;
-          console.error(error);
         });
-    }
-  </script>
-</body>
-</html>
+
+        // Likert
+        timeline.push({
+          type: jsPsychSurveyLikert,
+          preamble: "<h3>Perceptions of Climate Change</h3>",
+          questions: [
+            { prompt: "In your view, how much do you think the temperature of the town has changed in the last 40 years?",
+              labels: ['1 (remained the same)', '','','','','','','','', '10 (changed a lot)'],
+              required: true, name: "temperature impact_rating" },
+            { prompt: "In your view, how much do you think the frequency at which the lake freezes has changed in Townsville in the last 40 years??",
+              labels: ['1 (remained the same)', '','','','','','','','', '10 (changed a lot)'],
+              required: true, name: "freeze impact_rating" },
+            { prompt: "In your view, how much do you think Townsville has been affected by climate change?",
+              labels: ['1 (not affected at all)', '','','','','','','','', '10 (extremely affected)'],
+              required: true, name: "climate impact_rating" },
+          ],
+          data: { trial_type: "perception_ratings" }
+        });
+
+        // Changepoint
+        timeline.push({
+          type: jsPsychSurveyHtmlForm,
+          preamble: `<h3>Changepoint Detection</
