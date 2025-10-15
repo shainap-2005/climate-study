@@ -288,7 +288,14 @@
 
 
 
-        const jsPsych = initJsPsych();
+      const jsPsych = initJsPsych();
+const timeline = [];
+
+timeline.push({
+  type: jsPsychHtmlKeyboardResponse,
+  stimulus: "Hello world!"
+});
+
 jsPsych.run(timeline);
 
       })
