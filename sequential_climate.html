@@ -160,10 +160,10 @@
 
     // === Load and parse the CSV ===
     fetch(chosen_file)
-      .then(r => {
-        if (!r.ok) throw new Error(\`Could not load \${chosen_file} (status \${r.status})\`);
-        return r.text();
-      })
+  .then(r => {
+    if (!r.ok) throw new Error("Could not load " + chosen_file + " (status " + r.status + ")");
+    return r.text();
+  })
       .then(csvText => {
         const lines = csvText.trim().split("\n");
         const rawRows = lines.map(line => line.split(","));
