@@ -288,7 +288,9 @@
 
 
 
-        jsPsych.run(timeline);
+        const jsPsych = initJsPsych();
+jsPsych.run(timeline);
+
       })
       .catch(function(error) {
         document.getElementById("jspsych-target").innerHTML =
