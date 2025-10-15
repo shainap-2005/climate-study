@@ -238,12 +238,23 @@
           choices: "ALL_KEYS"
         });
 
-        timeline.push({
-          type: jsPsychHtmlKeyboardResponse,
-          stimulus:
-            '<div class="center-screen"><div><p>You're done! Press any key to download your results and save them.</p><p class="small-note" id="save-status"></p></div></div>',
-          on_finish: async function() {
-            jsPsych.data.get().localSave("csv", "climate_results_" + (is_binary ? "binary" : "continuous") + "_" + YEAR_START + "-" + YEAR_END + ".csv");
+       timeline.push({
+  type: jsPsychHtmlKeyboardResponse,
+  stimulus:
+    '<div class="center-screen"><div><p>You\'re done! Press any key to download your results and save them.</p><p class="small-note" id="save-status"></p></div></div>',
+  on_finish: async function() {
+    jsPsych.data.get().localSave(
+      "csv",
+      "climate_results_" +
+        (is_binary ? "binary" : "continuous") +
+        "_" +
+        YEAR_START +
+        "-" +
+        YEAR_END +
+        ".csv"
+    );
+  }
+});
 
             const payload = {
               meta: {
