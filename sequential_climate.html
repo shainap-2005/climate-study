@@ -92,7 +92,17 @@
       type: jsPsychHtmlKeyboardResponse,
       stimulus:
         `<div class="center-screen"><div>
-          <p>In the next screens, you will see a sequence of data that will show ${is_binary ? "<strong>whether or not the lake of Townsville froze</strong> for a particular year." : "<strong>the average winter temperature</strong> for a particular year".}</p> <p> ${is_binary ? "A year which says YES means that the lake froze over completely and was deemed safe for ice skating. A year which says NO means the lake did not freeze completely." : "The average winter temperature is taken by averaging the daily temperature in Fahrenheit over the months: November, December, and January."}.</p>
+         <p>In the next screens, you will see a sequence of data that will show ${
+  is_binary
+    ? "<strong>whether or not the lake of Townsville froze</strong> for a particular year."
+    : "<strong>the average winter temperature</strong> for a particular year."
+}</p>
+<p>${
+  is_binary
+    ? "A year which says YES means that the lake froze over completely and was deemed safe for ice skating. A year which says NO means the lake did not freeze completely."
+    : "The average winter temperature is taken by averaging the daily temperature in Fahrenheit over the months: November, December, and January."
+}</p>
+
           <p><strong>Important:</strong> Data will be shown to you <strong>one year at a time</strong> from 1980-2020 and will disappear. Each datapoint will be shown to you for <strong> only 1 second before disappearing</strong>. We request you to please pay attention to the trend as much as possible.</p>
           <p>Press any key to begin the experiment.</p>
         </div></div>`
