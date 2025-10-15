@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>UCLA Research Information Sheet</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+      margin: 40px;
+      max-width: 800px;
+      color: #222;
+    }
+    h1, h2 {
+      color: #003B5C;
+    }
+    ul {
+      list-style-type: disc;
+      margin-left: 25px;
+    }
+    .consent {
+      margin-top: 30px;
+      padding: 15px;
+      border: 1px solid #ccc;
+      background: #f9f9f9;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>University of California, Los Angeles</h1>
+  <h2>RESEARCH INFORMATION SHEET<br>Data Perception Study</h2>
+
+  <h3>Introduction</h3>
+  <p>
+    Professor Rachit Dubey from the Department of Communication at the University of California, Los Angeles is conducting a research study. 
+    You were selected as a possible participant because you are 18 years of age or older, fluent in English, and based in the U.S. 
+    Your participation in this study is voluntary.
+  </p>
+
+  <h3>What should I know about this study?</h3>
+  <ul>
+    <li>Someone will explain this research study to you.</li>
+    <li>Whether or not you take part is up to you.</li>
+    <li>You can choose not to take part or withdraw later without penalty.</li>
+    <li>Your decision will not affect your relationship with UCLA.</li>
+    <li>You can ask any questions you want before you decide.</li>
+  </ul>
+
+  <h3>Why is this research being done?</h3>
+  <p>
+    The purpose of this study is to better understand how people process information, make judgments, and solve problems.
+    The findings may help us gain insight into human cognition and behavior.
+  </p>
+
+  <h3>How long will it take, and what will I do?</h3>
+  <p>
+    Participation will take about 10–12 minutes. You will read instructions, complete computer-based tasks, and answer short questions
+    about your perceptions and opinions of the data you viewed.
+  </p>
+
+  <h3>Risks and Benefits</h3>
+  <p>
+    There are no anticipated risks or discomforts beyond everyday experiences. You may withdraw at any time.
+    There are no direct benefits, but the research may advance understanding of human cognition.
+  </p>
+
+  <h3>Confidentiality</h3>
+  <p>
+    Data will be collected anonymously and stored on secure, password-protected servers. No identifying information will be linked to your responses.
+    Only the research team and authorized UCLA personnel may access de-identified data.
+  </p>
+
+  <h3>Compensation</h3>
+  <p>
+    You will be compensated at a rate of at least $15 per hour via the study platform after completing the study.
+  </p>
+
+  <h3>Contact Information</h3>
+  <p><strong>Researcher:</strong> Prof. Rachit Dubey — <a href="mailto:rdubey@ucla.edu">rdubey@ucla.edu</a></p>
+  <p><strong>UCLA Office of Human Research Protection Program (OHRPP):</strong> (310) 206-2040, 
+     <a href="mailto:participants@research.ucla.edu">participants@research.ucla.edu</a></p>
+
+  <h3>Your Rights</h3>
+  <ul>
+    <li>You can choose whether to participate or withdraw at any time.</li>
+    <li>No penalty or loss of benefits for refusing to participate.</li>
+    <li>You may skip any questions you don’t wish to answer.</li>
+  </ul>
+
+  <div class="consent">
+    <label>
+      <input type="checkbox" id="consentBox" required>
+      I have read and understood the above information and consent to participate in this study.
+    </label>
+  </div>
+
+  <button onclick="window.location.href='survey.html'">Continue to Survey</button>
+
+</body>
+</html>
