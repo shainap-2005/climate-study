@@ -242,50 +242,51 @@
   type: jsPsychHtmlKeyboardResponse,
   stimulus:
     '<div class="center-screen"><div><p>You\'re done! Press any key to download your results and save them.</p><p class="small-note" id="save-status"></p></div></div>',
-  on_finish: async function() {
-    jsPsych.data.get().localSave(
-      "csv",
-      "climate_results_" +
-        (is_binary ? "binary" : "continuous") +
-        "_" +
-        YEAR_START +
-        "-" +
-        YEAR_END +
-        ".csv"
-    );
+ on_finish: async function() {
+  jsPsych.data.get().localSave(
+    "csv",
+    "climate_results_" +
+      (is_binary ? "binary" : "continuous") +
+      "_" +
+      YEAR_START +
+      "-" +
+      YEAR_END +
+      ".csv"
+  );
+
+  const payload = {
+    meta: {
+      condition: is_binary ? "binary" : "continuous",
+      dataset_file: chosen_file,
+      finished_at: new Date().toISOString(),
+      user_agent: navigator.userAgent || null,
+      year_start: YEAR_START,
+      year_end: YEAR_END
+    },
+    json: jsPsych.data.get().values(),
+    csv: jsPsych.data.get().csv()
+  };
+
+  const statusEl = document.getElementById("save-status");
+  try {
+    const res = await fetch("/experiment-data", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+    const out = await res.json();
+    if (!out.ok) throw new Error(out.error || "Unknown error");
+    if (statusEl) statusEl.textContent = "Saved to database ✔";
+    window.location.href = "/finish";
+  } catch (err) {
+    console.error("Save failed:", err);
+    if (statusEl)
+      statusEl.textContent =
+        "Could not save to database (CSV still downloaded).";
   }
-});
+}
 
-            const payload = {
-              meta: {
-                condition: is_binary ? "binary" : "continuous",
-                dataset_file: chosen_file,
-                finished_at: new Date().toISOString(),
-                user_agent: navigator.userAgent || null,
-                year_start: YEAR_START,
-                year_end: YEAR_END
-              },
-              json: jsPsych.data.get().values(),
-              csv: jsPsych.data.get().csv()
-            };
 
-            const statusEl = document.getElementById("save-status");
-            try {
-              const res = await fetch("/experiment-data", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(payload)
-              });
-              const out = await res.json();
-              if (!out.ok) throw new Error(out.error || "Unknown error");
-              if (statusEl) statusEl.textContent = "Saved to database ✔";
-              window.location.href = "/finish";
-            } catch (err) {
-              console.error("Save failed:", err);
-              if (statusEl) statusEl.textContent = "Could not save to database (CSV still downloaded).";
-            }
-          }
-        });
 
         jsPsych.run(timeline);
       })
