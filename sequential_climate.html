@@ -13,43 +13,26 @@
   <script src="https://unpkg.com/@jspsych/plugin-instructions"></script>
 
   <style>
-    html, body { height: 100%; margin: 0; }
-    body {
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-      background:#f7f7f7;
-    }
-    #jspsych-target {
-      max-width: 820px;
-      margin: 40px auto;
-      padding: 32px;
-      background:#fff;
-      border-radius: 12px;
-      box-shadow: 0 10px 30px rgba(0,0,0,.06);
-    }
-    .center-screen {
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      min-height: 50vh;
-      font-size: 22px;
-      line-height: 1.5;
-    }
-    .small-note { font-size: 14px; opacity:.75; margin-top: 8px; }
+  .jspsych-content {
+    max-width: 80%;     /* widen the box */
+    width: 800px;       /* or any size you like */
+    height: 400px;      /* make it taller */
+    margin: auto;       /* center it */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;    /* make text larger */
+    line-height: 1.6;
+  }
 
-    /* ✅ Bigger box only for Townsville intro & datapoints */
-    .townsville-box {
-      width: 850px;
-      height: 420px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 26px;
-      line-height: 1.6;
-      margin: auto;
-      border: 2px solid #ccc;
-      border-radius: 16px;
-    }
-  </style>
+  /* Optional: soften the edges and add padding */
+  .jspsych-display-element {
+    background-color: #fafafa;
+    border-radius: 20px;
+    padding: 20px;
+  }
+</style>
+
 </head>
 <body>
   <noscript>JavaScript is required to run this experiment.</noscript>
@@ -58,52 +41,55 @@
   <script>
     console.log("✅ sequential_climate.html loaded");
 
+    // ==== CONFIG ====
     const YEAR_START = 1981;
     const YEAR_END   = 2020;
 
+    // Initialize jsPsych
     const jsPsych = initJsPsych({
       display_element: "jspsych-target",
+      // final saving happens in the last trial's on_finish below
     });
 
-    // === CONSENT FORM ===
-    const consent = {
-      type: jsPsychHtmlKeyboardResponse,
-      stimulus: `
-        <iframe src="consent_form.html"
-          style="width:100%;height:600px;border:none;border-radius:8px;"></iframe>
-        <div style="text-align:center;margin-top:20px;">
-          <button id="consent-agree"
-            style="background:#0066cc;color:white;padding:12px 24px;
-                   border:none;border-radius:6px;font-size:16px;cursor:pointer;">
-            I Agree — Continue
-          </button>
-        </div>
-        <p class="small-note" style="text-align:center;">
-          Press the button to start the experiment.
-        </p>
-      `,
-      choices: "NO_KEYS",
-      on_load: () => {
-        document.getElementById("consent-agree").addEventListener("click", () => {
-          jsPsych.finishTrial();
-        });
-      }
-    };
-
-    const timeline = [consent];
+// === CONSENT FORM ===
+const consent = {
+  type: jsPsychHtmlKeyboardResponse,
+  stimulus: `
+    <iframe src="consent_form.html"
+      style="width:100%;height:600px;border:none;border-radius:8px;"></iframe>
+    <div style="text-align:center;margin-top:20px;">
+      <button id="consent-agree"
+        style="background:#0066cc;color:white;padding:12px 24px;
+               border:none;border-radius:6px;font-size:16px;cursor:pointer;">
+        I Agree — Continue
+      </button>
+    </div>
+    <p class="small-note" style="text-align:center;">
+      Press the button to start the experiment.
+    </p>
+  `,
+  choices: "NO_KEYS",
+  on_load: () => {
+    // Attach a click listener to the consent button
+    document.getElementById("consent-agree").addEventListener("click", () => {
+      jsPsych.finishTrial(); // advance to next trial
+    });
+  }
+};
+    
+  const timeline = [consent];
 
     // === Intro ===
     timeline.push({
       type: jsPsychInstructions,
       pages: [
-        `<div class="townsville-box"><div>
+        `<div class="center-screen"><div>
           <h2>Welcome!</h2>
           <p>In this experiment you will be given some information about a fictional town named "Townsville".</p>
         </div></div>`,
-        `<div class="townsville-box"><div>
-          <p>Townsville is a winter town. During the holiday season, Townsville is known for its chilly, low winter temperatures. Historically, its local lake has attracted tourists for ice-skating during the holiday months.</p>
-          <p>Click "Next" to continue.</p>
-        </div></div>`,
+        `<div class="center-screen"><div>
+        <p>Townsville is a winter town. During the holiday season, Townsville is known for its chilly, low winter temperatures. Historically, its local lake has attracted tourists for ice-skating during the holiday months. </p>
+        <p>Click "Next" to continue.</p></div></div>`,
       ],
       show_clickable_nav: true
     });
@@ -140,30 +126,32 @@
     const is_binary = condition === "binary";
     console.log("Chosen:", { condition, chosen_file, YEAR_START, YEAR_END });
 
-    // === Instructions before data ===
+    // Condition announcement
+    //can we break this down into two screens? Put the ["Important ..."] in a different screen
     timeline.push({
       type: jsPsychHtmlKeyboardResponse,
-      stimulus: `
-        <div class="center-screen"><div>
+      stimulus:
+        `<div class="center-screen"><div>
          <p>In the next screens, you will see a sequence of data that will show ${
-          is_binary
-            ? "<strong>whether or not the lake of Townsville froze</strong> for a particular year."
-            : "<strong>the average winter temperature</strong> for a particular year."
-        }</p>
-        <p>${
-          is_binary
-            ? "A year which says YES means that the lake froze over completely and was deemed safe for ice skating. A year which says NO means the lake did not freeze completely."
-            : "The average winter temperature is taken by averaging the daily temperature in Fahrenheit over the months: November, December, and January."
-        }</p>
-        <p><strong>Important:</strong> Data will be shown to you <strong>one year at a time</strong> from 1980–2020 and will disappear. Each datapoint will be shown to you for <strong>only 1 second before disappearing</strong>. Please pay attention to the trend as much as possible.</p>
-        <p>Press any key to begin the experiment.</p>
+  is_binary
+    ? "<strong>whether or not the lake of Townsville froze</strong> for a particular year."
+    : "<strong>the average winter temperature</strong> for a particular year."
+}</p>
+<p>${
+  is_binary
+    ? "A year which says YES means that the lake froze over completely and was deemed safe for ice skating. A year which says NO means the lake did not freeze completely."
+    : "The average winter temperature is taken by averaging the daily temperature in Fahrenheit over the months: November, December, and January."
+}</p>
+
+          <p><strong>Important:</strong> Data will be shown to you <strong>one year at a time</strong> from 1980-2020 and will disappear. Each datapoint will be shown to you for <strong> only 1 second before disappearing</strong>. We request you to please pay attention to the trend as much as possible.</p>
+          <p>Press any key to begin the experiment.</p>
         </div></div>`
     });
 
-    // === Load and parse CSV ===
+    // === Load and parse the CSV ===
     fetch(chosen_file)
       .then(r => {
-        if (!r.ok) throw new Error(\`Could not load \${chosen_file} (status \${r.status})\`);
+        if (!r.ok) throw new Error(`Could not load ${chosen_file} (status ${r.status})`);
         return r.text();
       })
       .then(csvText => {
@@ -179,32 +167,33 @@
           })
           .sort((a, b) => parseInt(a[0], 10) - parseInt(b[0], 10));
 
-        if (rows.length === 0) throw new Error(\`No data rows found between \${YEAR_START} and \${YEAR_END}.\`);
+        if (rows.length === 0) throw new Error(`No data rows found between ${YEAR_START} and ${YEAR_END}.`);
 
         const yearsAvailable = rows.map(r => parseInt(r[0], 10));
         const halfwayIndex = Math.floor(rows.length / 2);
+
         const attentionWords = ["apple", "house", "tree", "book", "dog"];
         const attentionWord  = attentionWords[Math.floor(Math.random() * attentionWords.length)];
 
-        // === Sequential datapoints ===
+        // sequential datapoints
         rows.forEach((row, index) => {
           const year  = row[0];
           const value = row[1];
           let display;
 
           if (is_binary) {
-            display = \`Year: \${year} | Lake Freeze: \${value}\`;
+            display = `Year: ${year} | Lake Freeze: ${value}`;
           } else {
             const celsius    = parseFloat(value);
             const fahrenheit = (celsius * 9/5 + 32).toFixed(1);
-            display = \`Year: \${year} | Avg Temp: \${fahrenheit}°F\`;
+            display = `Year: ${year} | Avg Temp: ${fahrenheit}°F`;
           }
 
           if (index === halfwayIndex) {
             timeline.push({
               type: jsPsychHtmlKeyboardResponse,
-              stimulus: `
-                <div class="center-screen"><div>
+              stimulus:
+                `<div class="center-screen"><div>
                    <p><strong>Attention Check</strong></p>
                    <p>Please remember this word:</p>
                    <p style="font-size:48px; margin: 10px 0;"><strong>${attentionWord}</strong></p>
@@ -216,17 +205,16 @@
             });
           }
 
-          // ✅ Bigger box for data displays only
           timeline.push({
             type: jsPsychHtmlKeyboardResponse,
-            stimulus: `<div class="townsville-box">${display}</div>`,
+            stimulus: `<div class="center-screen"><div>${display}</div></div>`,
             choices: "NO_KEYS",
             trial_duration: 2000,
             data: { trial_type: "datapoint", index, year, value }
           });
         });
 
-        // === Likert, changepoint, recall, and debrief (unchanged) ===
+        // Likert
         timeline.push({
           type: jsPsychSurveyLikert,
           preamble: "<h3>Perceptions of Climate Change</h3>",
@@ -234,7 +222,7 @@
             { prompt: "In your view, how much do you think the temperature of the town has changed in the last 40 years?",
               labels: ['1 (remained the same)', '','','','','','','','', '10 (changed a lot)'],
               required: true, name: "temperature impact_rating" },
-            { prompt: "In your view, how much do you think the frequency at which the lake freezes has changed in Townsville in the last 40 years?",
+            { prompt: "In your view, how much do you think the frequency at which the lake freezes has changed in Townsville in the last 40 years??",
               labels: ['1 (remained the same)', '','','','','','','','', '10 (changed a lot)'],
               required: true, name: "freeze impact_rating" },
             { prompt: "In your view, how much do you think Townsville has been affected by climate change?",
@@ -244,6 +232,7 @@
           data: { trial_type: "perception_ratings" }
         });
 
+        // Changepoint -- we can remove this in the pilot experiment
         timeline.push({
           type: jsPsychSurveyHtmlForm,
           preamble: `<h3>Changepoint Detection</h3>
@@ -259,6 +248,7 @@
           data: { trial_type: "changepoint_detection" }
         });
 
+        // Attention recall
         timeline.push({
           type: jsPsychSurveyText,
           preamble: "<h3>Memory Check</h3>",
@@ -273,65 +263,83 @@
           }
         });
 
+
+        // === DEBRIEF FORM ===
         timeline.push({
-          type: jsPsychHtmlKeyboardResponse,
-          stimulus: `
-            <iframe src="debriefing.html"
-              style="width:100%;height:600px;border:none;border-radius:8px;"></iframe>
-            <div style="text-align:center;margin-top:20px;">
-              <p>Thank you for your participation!</p>
-            </div>
-          `,
-          choices: "ALL_KEYS"
-        });
+         type: jsPsychHtmlKeyboardResponse,
+         stimulus: `
+    <iframe src="debriefing.html"
+      style="width:100%;height:600px;border:none;border-radius:8px;"></iframe>
+    <div style="text-align:center;margin-top:20px;">
+      <p>Thank you for your participation!</p>
+    </div>
+  `,
+  choices: "ALL_KEYS"
+});
 
-        // === Save & finish ===
-        timeline.push({
-          type: jsPsychHtmlKeyboardResponse,
-          stimulus: `<div class="center-screen"><div>
-            <p>You're done! Press any key to download your results and save them.</p>
-            <p class="small-note" id="save-status"></p>
-          </div></div>`,
-          on_finish: async function () {
-            jsPsych.data.get().localSave(
-              "csv",
-              \`climate_results_\${is_binary ? "binary" : "continuous"}_\${YEAR_START}-\${YEAR_END}.csv\`
-            );
+    // === DEBRIEF FORM ===
+timeline.push({
+  type: jsPsychHtmlKeyboardResponse,
+  stimulus: `
+    <iframe src="debriefing.html"
+      style="width:100%; height:600px; border:none; border-radius:8px;"></iframe>
+    <div style="text-align:center; margin-top:20px;">
+      <p>Thank you for your participation!</p>
+    </div>
+  `,
+  choices: "ALL_KEYS"
+});
 
-            const payload = {
-              meta: {
-                condition: is_binary ? "binary" : "continuous",
-                dataset_file: chosen_file,
-                finished_at: new Date().toISOString(),
-                user_agent: navigator.userAgent || null,
-                year_start: YEAR_START,
-                year_end: YEAR_END
-              },
-              json: jsPsych.data.get().values(),
-              csv: jsPsych.data.get().csv()
-            };
+// === Save & finish ===
+timeline.push({
+  type: jsPsychHtmlKeyboardResponse,
+  stimulus: `<div class="center-screen"><div>
+    <p>You're done! Press any key to download your results and save them.</p>
+    <p class="small-note" id="save-status"></p>
+  </div></div>`,
+  on_finish: async function () {
+    // local download (optional)
+  jsPsych.data.get().localSave(
+  "csv",
+  `climate_results_${is_binary ? "binary" : "continuous"}_${YEAR_START}-${YEAR_END}.csv`
+);
 
-            const statusEl = document.getElementById("save-status");
-            try {
-              const res = await fetch("/experiment-data", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(payload)
-              });
-              const out = await res.json();
-              if (!out.ok) throw new Error(out.error || "Unknown error");
-              if (statusEl) statusEl.textContent = "Saved to database ✔";
-              window.location.href = "/finish";
-            } catch (err) {
-              console.error("Save failed:", err);
-              if (statusEl)
-                statusEl.textContent =
-                  "Could not save to database (CSV still downloaded).";
-            }
-          }
-        });
+    // send to your server
+    const payload = {
+      meta: {
+        condition: is_binary ? "binary" : "continuous",
+        dataset_file: chosen_file,
+        finished_at: new Date().toISOString(),
+        user_agent: navigator.userAgent || null,
+        year_start: YEAR_START,
+        year_end: YEAR_END
+      },
+      json: jsPsych.data.get().values(),
+      csv: jsPsych.data.get().csv()
+    };
 
-        jsPsych.run(timeline);
+    const statusEl = document.getElementById("save-status");
+    try {
+      const res = await fetch("/experiment-data", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      const out = await res.json();
+      if (!out.ok) throw new Error(out.error || "Unknown error");
+      if (statusEl) statusEl.textContent = "Saved to database ✔";
+      window.location.href = "/finish";
+    } catch (err) {
+      console.error("Save failed:", err);
+      if (statusEl)
+        statusEl.textContent =
+          "Could not save to database (CSV still downloaded).";
+    }
+  }
+});
+
+jsPsych.run(timeline);
+
       })
       .catch(error => {
         document.getElementById("jspsych-target").innerHTML =
