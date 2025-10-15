@@ -285,9 +285,11 @@ timeline.push({
   </div></div>`,
   on_finish: async function () {
     // local download (optional)
-    jsPsych.data.get().localSave(
-      "csv",
-      \`climate_results_\${is_binary ? "binary" : "continuous"}_\${YEAR_START}-\${YEAR_END}.csv\`
+  jsPsych.data.get().localSave(
+  "csv",
+  `climate_results_${is_binary ? "binary" : "continuous"}_${YEAR_START}-${YEAR_END}.csv`
+);
+
     );
 
     // send to your server
