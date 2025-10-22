@@ -1,1 +1,158 @@
+/* ===== BASE STYLES ===== */
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  background: #fff;
+}
+
+/* ===== JSPSYCH CONTAINER ===== */
+#jspsych-target {
+  max-width: 900px;
+  margin: 40px auto;
+  padding: 32px;
+  background: #fff;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+/* ===== DATAPOINT DISPLAY (MAIN FOCUS) ===== */
+.center-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 50vh;
+  font-size: 48px; /* Increased from 22px */
+  line-height: 1.5;
+}
+
+/* Remove any boxes/borders around content */
+.center-screen > div {
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+  margin: 0 !important;
+}
+
+/* Target any jsPsych content wrappers */
+.jspsych-content-wrapper,
+.jspsych-content {
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+}
+
+/* Ensure no styling on divs inside center-screen */
+.center-screen div,
+.center-screen > div > *,
+.center-screen * {
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+/* Remove all outlines and borders from jsPsych elements */
+.jspsych-display-element,
+.jspsych-content,
+.jspsych-content-wrapper,
+#jspsych-content {
+  outline: none !important;
+  border: none !important;
+}
+
+/* Remove focus outlines */
+div:focus,
+.center-screen:focus,
+.center-screen div:focus {
+  outline: none !important;
+  border: none !important;
+}
+
+/* ===== UTILITY CLASSES ===== */
+.small-note {
+  font-size: 14px;
+  opacity: 0.75;
+  margin-top: 8px;
+}
+
+/* ===== INTRO SCREENS (Townsville introduction) ===== */
+.jspsych-instructions-nav p,
+.jspsych-content p {
+  font-size: 24px;
+  line-height: 1.8;
+}
+
+.jspsych-content h2 {
+  font-size: 40px;
+  margin-bottom: 24px;
+}
+
+/* Make welcome/intro screens in center-screen bigger */
+.center-screen h2 {
+  font-size: 40px;
+  margin-bottom: 20px;
+}
+
+.center-screen p {
+  font-size: 24px;
+}
+
+/* ===== INSTRUCTIONS & CONTENT ===== */
+h2 {
+  font-size: 28px;
+  margin-bottom: 16px;
+}
+
+h3 {
+  font-size: 22px;
+  margin-bottom: 12px;
+}
+
+p {
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+/* ===== BUTTONS ===== */
+button {
+  font-family: inherit;
+}
+
+button:disabled {
+  cursor: not-allowed !important;
+}
+
+/* ===== ATTENTION CHECK ===== */
+[data-trial_type="attention_word_display"] .center-screen {
+  font-size: 64px;
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+@media (max-width: 768px) {
+  #jspsych-target {
+    margin: 20px;
+    padding: 20px;
+  }
+  
+  .center-screen {
+    font-size: 36px; /* Smaller on mobile but still prominent */
+  }
+}
+
+@media (max-width: 480px) {
+  .center-screen {
+    font-size: 28px;
+  }
+}
 
