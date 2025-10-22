@@ -116,23 +116,5 @@
 
   <p class="note">You will be given a copy of this information to keep for your records.</p>
 
-  <div class="consent">
-    <label>
-      <input type="checkbox" id="consentBox" required>
-      I have read and understood the above information and consent to participate in this study.
-    </label>
-  </div>
-
-  <!-- optional: only enable the continue button when box is checked -->
-  <button id="continueBtn" disabled>Continue</button>
-
-  <script>
-    const box = document.getElementById('consentBox');
-    const btn = document.getElementById('continueBtn');
-    if (box && btn) {
-      box.addEventListener('change', () => { btn.disabled = !box.checked; });
-      btn.addEventListener('click', () => window.parent.postMessage({ consent: true }, '*'));
-    }
-  </script>
 </body>
 </html>
