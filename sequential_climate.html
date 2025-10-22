@@ -268,29 +268,16 @@ const consent = {
 
         // === DEBRIEF FORM ===
         timeline.push({
-         type: jsPsychHtmlKeyboardResponse,
-         stimulus: `
-    <iframe src="debriefing.html"
-      style="width:100%;height:600px;border:none;border-radius:8px;"></iframe>
-    <div style="text-align:center;margin-top:20px;">
-      <p>Thank you for your participation!</p>
-    </div>
-  `,
-  choices: "ALL_KEYS"
-});
-
-    // === DEBRIEF FORM ===
-timeline.push({
-  type: jsPsychHtmlKeyboardResponse,
-  stimulus: `
-    <iframe src="debriefing.html"
-      style="width:100%; height:600px; border:none; border-radius:8px;"></iframe>
-    <div style="text-align:center; margin-top:20px;">
-      <p>Thank you for your participation!</p>
-    </div>
-  `,
-  choices: "ALL_KEYS"
-});
+          type: jsPsychHtmlKeyboardResponse,
+          stimulus: `
+            <iframe src="debriefing.html"
+              style="width:100%;height:600px;border:none;border-radius:8px;"></iframe>
+            <div style="text-align:center;margin-top:20px;">
+              <p>Thank you for your participation!</p>
+            </div>
+          `,
+          choices: "ALL_KEYS"
+        });
 
 // === Save & finish ===
 timeline.push({
