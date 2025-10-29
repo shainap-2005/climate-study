@@ -216,17 +216,8 @@ const consent = {
             type: jsPsychHtmlKeyboardResponse,
             stimulus: `<div class="center-screen"><div>${display}</div></div>`,
             choices: "NO_KEYS",
-            trial_duration: 2000,
+            trial_duration: 1500,
             data: { trial_type: "datapoint", index, year, value }
-          });
-
-          // Blank screen between data points
-          timeline.push({
-            type: jsPsychHtmlKeyboardResponse,
-            stimulus: `<div class="center-screen"><div></div></div>`,
-            choices: "NO_KEYS",
-            trial_duration: 500,
-            data: { trial_type: "blank_screen" }
           });
         });
 
@@ -238,7 +229,7 @@ const consent = {
             { prompt: "In your view, how much do you think the temperature of the town has changed in the last 40 years?",
               labels: ['1 (remained the same)', '','','','','','','','', '10 (changed a lot)'],
               required: true, name: "temperature impact_rating" },
-            { prompt: "In your view, how much do you think the frequency at which the lake freezes has changed in Townsville in the last 40 years??",
+            { prompt: "In your view, how much do you think the frequency at which the lake freezes has changed in Townsville in the last 40 years?",
               labels: ['1 (remained the same)', '','','','','','','','', '10 (changed a lot)'],
               required: true, name: "freeze impact_rating" },
             { prompt: "In your view, how much do you think Townsville has been affected by climate change?",
