@@ -150,7 +150,7 @@ const consent = {
     : "The average winter temperature is taken by averaging the daily temperature in Fahrenheit over the months: November, December, and January."
 }</p>
 
-          <p><strong>Important:</strong> Data will be shown to you <strong>one year at a time</strong> from 1980-2020 and will disappear. Each datapoint will be shown to you for <strong> only 1 second before disappearing</strong>. We request you to please pay attention to the trend as much as possible.</p>
+          <p><strong>Important:</strong> Data will be shown to you <strong>one year at a time</strong> from 1980-2020 and will disappear. Each datapoint will be shown to you for <strong> 2 seconds before disappearing</strong>. We request you to please pay attention to the trend as much as possible.</p>
           <p>Press any key to begin the experiment.</p>
         </div></div>`
     });
@@ -216,7 +216,7 @@ const consent = {
             type: jsPsychHtmlKeyboardResponse,
             stimulus: `<div class="center-screen"><div>${display}</div></div>`,
             choices: "NO_KEYS",
-            trial_duration: 2500,
+            trial_duration: 2000,
             data: { trial_type: "datapoint", index, year, value }
           });
         });
