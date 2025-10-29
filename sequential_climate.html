@@ -216,7 +216,7 @@ const consent = {
             type: jsPsychHtmlKeyboardResponse,
             stimulus: `<div class="center-screen"><div>${display}</div></div>`,
             choices: "NO_KEYS",
-            trial_duration: 2000,
+            trial_duration: 1500,
             data: { trial_type: "datapoint", index, year, value }
           });
         });
@@ -257,7 +257,7 @@ const consent = {
         });
 
 
-        // === DEBRIEF FORM ===
+        // === DEBRIEF & SAVE ===
         timeline.push({
           type: jsPsychHtmlKeyboardResponse,
           stimulus: `
@@ -265,58 +265,48 @@ const consent = {
               style="width:100%;height:600px;border:none;border-radius:8px;"></iframe>
             <div style="text-align:center;margin-top:20px;">
               <p>Thank you for your participation!</p>
+              <button id="acknowledge-btn"
+                style="background:#0066cc;color:white;padding:12px 32px;
+                       border:none;border-radius:6px;font-size:16px;cursor:pointer;margin-top:16px;">
+                I Acknowledge
+              </button>
             </div>
           `,
-          choices: "ALL_KEYS"
+          choices: "NO_KEYS",
+          on_load: () => {
+            document.getElementById("acknowledge-btn").addEventListener("click", async () => {
+              // Save data
+              const payload = {
+                meta: {
+                  condition: is_binary ? "binary" : "continuous",
+                  dataset_file: chosen_file,
+                  finished_at: new Date().toISOString()
+                },
+                json: jsPsych.data.get().values(),
+                csv: jsPsych.data.get().csv()
+              };
+
+              try {
+                await fetch("/experiment-data", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify(payload)
+                });
+                
+                // Show thank you
+                document.getElementById("jspsych-target").innerHTML = `
+                  <div class="center-screen"><div>
+                    <h1 style="font-size:48px;margin-bottom:16px;">Thank You!</h1>
+                    <p style="font-size:24px;">Your participation is complete.</p>
+                  </div></div>
+                `;
+              } catch (err) {
+                console.error("Save failed:", err);
+                alert("Data could not be saved. Please contact the researcher.");
+              }
+            });
+          }
         });
-
-// === Save & finish ===
-timeline.push({
-  type: jsPsychHtmlKeyboardResponse,
-  stimulus: `<div class="center-screen"><div>
-    <p>You're done! Press any key to download your results and save them.</p>
-    <p class="small-note" id="save-status"></p>
-  </div></div>`,
-  on_finish: async function () {
-    // local download (optional)
-  jsPsych.data.get().localSave(
-  "csv",
-  `climate_results_${is_binary ? "binary" : "continuous"}_${YEAR_START}-${YEAR_END}.csv`
-);
-
-    // send to your server
-    const payload = {
-      meta: {
-        condition: is_binary ? "binary" : "continuous",
-        dataset_file: chosen_file,
-        finished_at: new Date().toISOString(),
-        user_agent: navigator.userAgent || null,
-        year_start: YEAR_START,
-        year_end: YEAR_END
-      },
-      json: jsPsych.data.get().values(),
-      csv: jsPsych.data.get().csv()
-    };
-
-    const statusEl = document.getElementById("save-status");
-    try {
-      const res = await fetch("/experiment-data", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      });
-      const out = await res.json();
-      if (!out.ok) throw new Error(out.error || "Unknown error");
-      if (statusEl) statusEl.textContent = "Saved to database ✔";
-      window.location.href = "/finish";
-    } catch (err) {
-      console.error("Save failed:", err);
-      if (statusEl)
-        statusEl.textContent =
-          "Could not save to database (CSV still downloaded).";
-    }
-  }
-});
 
 jsPsych.run(timeline);
 
