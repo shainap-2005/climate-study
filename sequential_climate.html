@@ -177,7 +177,7 @@ const consent = {
         if (rows.length === 0) throw new Error(`No data rows found between ${YEAR_START} and ${YEAR_END}.`);
 
         const yearsAvailable = rows.map(r => parseInt(r[0], 10));
-        const halfwayIndex = Math.floor(rows.length / 2);
+        const randomIndex = Math.floor(Math.random() * trials.length);
 
         const attentionWords = ["apple", "house", "tree", "book", "dog"];
         const attentionWord  = attentionWords[Math.floor(Math.random() * attentionWords.length)];
@@ -196,7 +196,7 @@ const consent = {
             display = `Year: ${year} | Avg Temp: ${fahrenheit}°F`;
           }
 
-          if (index === halfwayIndex) {
+          if (index === randomIndex) {
             timeline.push({
               type: jsPsychHtmlKeyboardResponse,
               stimulus:
@@ -204,7 +204,7 @@ const consent = {
                    <p><strong>Attention Check</strong></p>
                    <p>Please remember this word:</p>
                    <p style="font-size:48px; margin: 10px 0;"><strong>${attentionWord}</strong></p>
-                   <p class="small-note">You'll be asked for it at the end.</p>
+                   <p class="small-note">You will be asked to recall it at the end.</p>
                  </div></div>`,
               choices: "NO_KEYS",
               trial_duration: 3000,
