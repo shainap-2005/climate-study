@@ -292,6 +292,15 @@ const consent = {
                   headers: { "Content-Type": "application/json" },
                   body: JSON.stringify(payload)
                 });
+
+                // do we need to download the data for the participants
+                const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `climate_study_${new Date().getTime()}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
                 
                 // Show thank you
                 document.getElementById("jspsych-target").innerHTML = `
