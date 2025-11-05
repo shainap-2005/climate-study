@@ -124,7 +124,7 @@ const consent = {
     ];
 
     // Randomly choose binary or continuous condition
-    const randomIndex = Math.floor(Math.random() * rows.length);
+    const condition = Math.random() < 0.5 ? "binary" : "continuous";
 
  
     const candidates = dataset_files.filter(f => f.startsWith(condition));
@@ -177,7 +177,7 @@ const consent = {
         if (rows.length === 0) throw new Error(`No data rows found between ${YEAR_START} and ${YEAR_END}.`);
 
         const yearsAvailable = rows.map(r => parseInt(r[0], 10));
-        const randomIndex = Math.floor(Math.random() * trials.length);
+        const randomIndex = Math.floor(Math.random() * rows.length);
 
         const attentionWords = ["apple", "house", "tree", "book", "dog"];
         const attentionWord  = attentionWords[Math.floor(Math.random() * attentionWords.length)];
