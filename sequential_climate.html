@@ -124,7 +124,7 @@ const consent = {
     ];
 
     // Randomly choose binary or continuous condition
-    const condition = Math.random() < 0.5 ? "binary" : "continuous";
+    const randomIndex = Math.floor(Math.random() * rows.length);
 
  
     const candidates = dataset_files.filter(f => f.startsWith(condition));
