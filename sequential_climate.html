@@ -177,7 +177,7 @@ const consent = {
         if (rows.length === 0) throw new Error(`No data rows found between ${YEAR_START} and ${YEAR_END}.`);
 
         const yearsAvailable = rows.map(r => parseInt(r[0], 10));
-        const randomIndex = Math.floor(Math.random() * rows.length);
+        const randomIndex = Math.floor(Math.random() * 21) + 9; 
 
         const attentionWords = ["apple", "house", "tree", "book", "dog"];
         const attentionWord  = attentionWords[Math.floor(Math.random() * attentionWords.length)];
@@ -293,16 +293,8 @@ const consent = {
                   body: JSON.stringify(payload)
                 });
 
-                // do we need to download the data for the participants
-                const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `climate_study_${new Date().getTime()}.json`;
-                a.click();
-                URL.revokeObjectURL(url);
                 
-                // Show thank you
+            
                 document.getElementById("jspsych-target").innerHTML = `
                   <div class="center-screen"><div>
                     <h1 style="font-size:48px;margin-bottom:16px;">Thank You!</h1>
