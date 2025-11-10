@@ -263,51 +263,38 @@ const consent = {
         });
 
 
-        // === DEBRIEF & SAVE ===
+        // debrief and save (auto);remove the connection to acknowledgement button
         timeline.push({
           type: jsPsychHtmlKeyboardResponse,
           stimulus: `
-            <iframe src="debriefing.html"
-              style="width:100%;height:600px;border:none;border-radius:8px;"></iframe>
-            <div style="text-align:center;margin-top:20px;">
-            </div>
+          <iframe src="debriefing.html"
+          style="width:100%;height:100vh;border:none;"></iframe>
           `,
           choices: "NO_KEYS",
-          on_load: () => {
-            document.getElementById("acknowledge-btn").addEventListener("click", async () => {
-              // Save data
-              const payload = {
-                meta: {
-                  condition: is_binary ? "binary" : "continuous",
-                  dataset_file: chosen_file,
-                  finished_at: new Date().toISOString()
-                },
-                json: jsPsych.data.get().values(),
-                csv: jsPsych.data.get().csv()
-              };
+          on_finish: async () => {
+            const payload = {
+              meta: {
+        condition: is_binary ? "binary" : "continuous",
+        dataset_file: chosen_file,
+        finished_at: new Date().toISOString()
+      },
+      json: jsPsych.data.get().values(),
+      csv: jsPsych.data.get().csv()
+    };
 
-              try {
-                await fetch("/experiment-data", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify(payload)
-                });
-
-                
-            
-                document.getElementById("jspsych-target").innerHTML = `
-                  <div class="center-screen"><div>
-                    <h1 style="font-size:48px;margin-bottom:16px;">Thank You!</h1>
-                    <p style="font-size:24px;">Your participation is complete.</p>
-                  </div></div>
-                `;
-              } catch (err) {
-                console.error("Save failed:", err);
-                alert("Data could not be saved. Please contact the researcher.");
-              }
-            });
-          }
-        });
+    try {
+      await fetch("/experiment-data", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      console.log("Data saved successfully to MongoDB");
+    } catch (err) {
+      console.error("Save failed:", err);
+      alert("Data could not be saved. Please contact the researcher.");
+    }
+  }
+});
 
 jsPsych.run(timeline);
 
