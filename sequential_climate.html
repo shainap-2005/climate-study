@@ -185,7 +185,7 @@ const consent = {
         if (rows.length === 0) throw new Error(`No data rows found between ${YEAR_START} and ${YEAR_END}.`);
 
         const yearsAvailable = rows.map(r => parseInt(r[0], 10));
-        const randomIndex = Math.floor(Math.random() * 21) + 9; 
+        const randomIndex = Math.floor(Math.random() * 21) + 9;
 
         const attentionWords = ["apple", "house", "tree", "book", "dog"];
         const attentionWord  = attentionWords[Math.floor(Math.random() * attentionWords.length)];
@@ -195,13 +195,12 @@ const consent = {
           const year  = row[0];
           const value = row[1];
           let display;
-
           if (is_binary) {
-            display = `Year: ${year} | Lake Freeze: ${value}`;
+            display = `Year: ${parseInt(year) + YEAR_OFFSET} | Lake Freeze: ${value}`;
           } else {
             const celsius    = parseFloat(value);
             const fahrenheit = (celsius * 9/5 + 32).toFixed(1);
-            display = `Year: ${year} | Avg Temp: ${fahrenheit}°F`;
+            display = `Year: ${parseInt(year) + YEAR_OFFSET} | Avg Temp: ${fahrenheit}°F`;
           }
 
           if (index === randomIndex) {
