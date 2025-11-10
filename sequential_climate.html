@@ -264,16 +264,16 @@ const consent = {
 
 
         // debrief and save (auto);remove the connection to acknowledgement button
-        timeline.push({
-          type: jsPsychHtmlKeyboardResponse,
-          stimulus: `
-          <iframe src="debriefing.html"
-          style="width:100%;height:100vh;border:none;"></iframe>
-          `,
-          choices: "NO_KEYS",
-          on_finish: async () => {
-            const payload = {
-              meta: {
+timeline.push({
+  type: jsPsychHtmlKeyboardResponse,
+  stimulus: `
+    <iframe src="debriefing.html"
+      style="width:100%;height:100vh;border:none;"></iframe>
+  `,
+  choices: "NO_KEYS",
+  on_load: async () => {
+    const payload = {
+      meta: {
         condition: is_binary ? "binary" : "continuous",
         dataset_file: chosen_file,
         finished_at: new Date().toISOString()
@@ -288,9 +288,9 @@ const consent = {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
       });
-      console.log("Data saved successfully to MongoDB");
+      console.log("✅ Data saved successfully to MongoDB");
     } catch (err) {
-      console.error("Save failed:", err);
+      console.error("❌ Save failed:", err);
       alert("Data could not be saved. Please contact the researcher.");
     }
   }
