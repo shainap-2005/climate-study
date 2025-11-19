@@ -135,7 +135,6 @@ const consent = {
     console.log("Chosen:", { condition, chosen_file, YEAR_START, YEAR_END });
 
     // Condition announcement
-    //can we break this down into two screens? Put the ["Important ..."] in a different screen
     timeline.push({
       type: jsPsychHtmlKeyboardResponse,
       stimulus:
@@ -154,29 +153,29 @@ const consent = {
         </div></div>`
     });
 
-    // === PRACTICE ROUND ===
+    // practice round - can modify the wording / instructions as needed 
 timeline.push({
   type: jsPsychHtmlKeyboardResponse,
   stimulus:
     `<div class="center-screen"><div>
       <h2>Practice Round</h2>
-      <p>Before we begin the actual experiment, let's do a quick practice round.</p>
-      <p>You will see <strong>5 data points</strong> from years 1990-1996, displayed the same way as in the real experiment.</p>
+      <p>Before we begin the actual experiment, there will be a brief practice round. </p>
+      <p>You will see <strong>5 data points</strong>, displayed the same way as in the real experiment.</p>
       <p>This is just to help you get familiar with how the data will appear.</p>
       <p>Press any key to start the practice.</p>
     </div></div>`
 });
 
 
-const practiceYears = [1990, 1991, 1993, 1995, 1996]; // 5 years
+const practiceYears = [1, 2, 3, 4, 5]; // 5 years
 
 if (is_binary) {
   const practiceData = [
-    { year: 1990, value: 'YES' },
-    { year: 1991, value: 'YES' },
-    { year: 1993, value: 'NO' },
-    { year: 1995, value: 'YES' },
-    { year: 1996, value: 'NO' }
+    { year: 1, value: 'YES' },
+    { year: 2, value: 'YES' },
+    { year: 3, value: 'NO' },
+    { year: 4, value: 'YES' },
+    { year: 5, value: 'NO' }
   ];
   
   practiceData.forEach((item, index) => {
