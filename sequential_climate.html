@@ -154,15 +154,69 @@ const consent = {
         </div></div>`
     });
 
+    // === PRACTICE ROUND ===
+timeline.push({
+  type: jsPsychHtmlKeyboardResponse,
+  stimulus:
+    `<div class="center-screen"><div>
+      <h2>Practice Round</h2>
+      <p>Before we begin the actual experiment, let's do a quick practice round.</p>
+      <p>You will see <strong>5 data points</strong> from years 1990-1996, displayed the same way as in the real experiment.</p>
+      <p>This is just to help you get familiar with how the data will appear.</p>
+      <p>Press any key to start the practice.</p>
+    </div></div>`
+});
+
+
+const practiceYears = [1990, 1991, 1993, 1995, 1996]; // 5 years
+
+if (is_binary) {
+  const practiceData = [
+    { year: 1990, value: 'YES' },
+    { year: 1991, value: 'YES' },
+    { year: 1993, value: 'NO' },
+    { year: 1995, value: 'YES' },
+    { year: 1996, value: 'NO' }
+  ];
+  
+  practiceData.forEach((item, index) => {
     timeline.push({
       type: jsPsychHtmlKeyboardResponse,
-      stimulus:
-        `<div class="center-screen"><div>
-          <p><strong>Important:</strong> Data will be shown to you <strong>one year at a time</strong> from 1981-2020 and will disappear. Each datapoint will be shown to you for <strong> 2 seconds before disappearing</strong>. We request you to please pay attention to the trend as much as possible.</p>
-          <p>Press any key to begin the experiment.</p>
-        </div></div>`
+      stimulus: `<div class="center-screen"><div>Year: ${item.year} | Lake Freeze: ${item.value}</div></div>`,
+      choices: "NO_KEYS",
+      trial_duration: 2000,
+      data: { trial_type: "practice_datapoint", index, year: item.year, value: item.value }
     });
-    
+  });
+  
+} else {
+
+  const practiceTemps = [27.0, 27.1, 26.9, 27.4, 28.1]; 
+  
+  practiceYears.forEach((year, index) => {
+    const temp = practiceTemps[index];
+    timeline.push({
+      type: jsPsychHtmlKeyboardResponse,
+      stimulus: `<div class="center-screen"><div>Year: ${year} | Avg Temp: ${temp}°F</div></div>`,
+      choices: "NO_KEYS",
+      trial_duration: 2000,
+      data: { trial_type: "practice_datapoint", index, year: year, value: temp }
+    });
+  });
+}
+
+
+timeline.push({
+  type: jsPsychHtmlKeyboardResponse,
+  stimulus:
+    `<div class="center-screen"><div>
+      <h2>Practice Complete!</h2>
+      <p>Great! Now you know how the data will be displayed.</p>
+      <p>The real experiment will begin next, showing data from 1981-2020.</p>
+      <p>Remember to pay attention to the overall trend in the data.</p>
+      <p>Press any key to begin the actual experiment.</p>
+    </div></div>`
+});
     // === Load and parse the CSV ===
     fetch(chosen_file)
       .then(r => {
