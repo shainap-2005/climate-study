@@ -11,6 +11,9 @@
   <script src="https://unpkg.com/@jspsych/plugin-survey-likert"></script>
   <script src="https://unpkg.com/@jspsych/plugin-survey-html-form"></script>
   <script src="https://unpkg.com/@jspsych/plugin-instructions"></script>
+  <script type="text/javascript" src=" https://pavlovia.org/lib/jspsych-7-pavlovia-2022.1.1.js">
+  </script>
+
 
   <!-- Link to external CSS file -->
   <link rel="stylesheet" href="style.css">
@@ -32,6 +35,16 @@
       display_element: "jspsych-target",
       // final saving happens in the last trial's on_finish below
     });
+
+      const pavlovia_init = {
+        type: jsPsychPavlovia,
+        command: "init"
+    };
+
+      var pavlovia_finish = {
+        type: jsPsychPavlovia,
+        command: "finish"
+    };
 
 // consent form 
 const consent = {
