@@ -11,9 +11,7 @@
   <script src="https://unpkg.com/@jspsych/plugin-survey-likert"></script>
   <script src="https://unpkg.com/@jspsych/plugin-survey-html-form"></script>
   <script src="https://unpkg.com/@jspsych/plugin-instructions"></script>
-  <script type="text/javascript" src=" https://pavlovia.org/lib/jspsych-7-pavlovia-2022.1.1.js">
-  </script>
-
+  <script type="text/javascript" src="https://pavlovia.org/lib/jspsych-7-pavlovia-2022.1.1.js"></script>
 
   <!-- Link to external CSS file -->
   <link rel="stylesheet" href="style.css">
@@ -33,84 +31,80 @@
     // Initialize jsPsych
     const jsPsych = initJsPsych({
       display_element: "jspsych-target",
-      // final saving happens in the last trial's on_finish below
     });
 
-      const pavlovia_init = {
-        type: jsPsychPavlovia,
-        command: "init"
+    const pavlovia_init = {
+      type: jsPsychPavlovia,
+      command: "init"
     };
 
-      var pavlovia_finish = {
-        type: jsPsychPavlovia,
-        command: "finish"
+    var pavlovia_finish = {
+      type: jsPsychPavlovia,
+      command: "finish"
     };
 
-// consent form 
-const consent = {
-  type: jsPsychHtmlKeyboardResponse,
-  stimulus: `
-    <iframe src="consent_form.html"
-      style="width:100%;height:600px;border:none;border-radius:8px;"></iframe>
-    <div style="text-align:center;margin-top:20px;">
-      <label style="display:block;margin-bottom:16px;font-size:15px;cursor:pointer;">
-        <input type="checkbox" id="consent-checkbox" style="margin-right:8px;cursor:pointer;">
-        I have read and understood the above information and consent to participate in this study.
-      </label>
-      <button id="consent-continue"
-        style="background:#0066cc;color:white;padding:12px 24px;
-               border:none;border-radius:6px;font-size:16px;cursor:pointer;opacity:0.5;"
-        disabled>
-        Continue
-      </button>
-      <button id="consent-decline"
-        style="background:#6c757d;color:white;padding:12px 24px;
-               border:none;border-radius:6px;font-size:16px;cursor:pointer;margin-left:12px;">
-        Decline
-      </button>
-    </div>
-  `,
-  choices: "NO_KEYS",
-  on_load: () => {
-    const checkbox = document.getElementById("consent-checkbox");
-    const continueBtn = document.getElementById("consent-continue");
-    const declineBtn = document.getElementById("consent-decline");
-
-    // Enable/disable continue button based on checkbox
-    checkbox.addEventListener("change", () => {
-      if (checkbox.checked) {
-        continueBtn.disabled = false;
-        continueBtn.style.opacity = "1";
-        continueBtn.style.cursor = "pointer";
-      } else {
-        continueBtn.disabled = true;
-        continueBtn.style.opacity = "0.5";
-        continueBtn.style.cursor = "not-allowed";
-      }
-    });
-
-    // Handle continue click
-    continueBtn.addEventListener("click", () => {
-      if (checkbox.checked) {
-        jsPsych.data.addProperties({ consented: true });
-        jsPsych.finishTrial(); // advance to next trial
-      }
-    });
-
-    // Handle decline click
-    declineBtn.addEventListener("click", () => {
-      jsPsych.data.addProperties({ consented: false });
-      // Show thank you screen and end experiment
-      document.getElementById("jspsych-target").innerHTML = `
-        <div style="display:flex;align-items:center;justify-content:center;min-height:80vh;">
-          <h2 style="font-size:24px;color:#333;">Thank you</h2>
+    // consent form 
+    const consent = {
+      type: jsPsychHtmlKeyboardResponse,
+      stimulus: `
+        <iframe src="consent_form.html"
+          style="width:100%;height:600px;border:none;border-radius:8px;"></iframe>
+        <div style="text-align:center;margin-top:20px;">
+          <label style="display:block;margin-bottom:16px;font-size:15px;cursor:pointer;">
+            <input type="checkbox" id="consent-checkbox" style="margin-right:8px;cursor:pointer;">
+            I have read and understood the above information and consent to participate in this study.
+          </label>
+          <button id="consent-continue"
+            style="background:#0066cc;color:white;padding:12px 24px;
+                   border:none;border-radius:6px;font-size:16px;cursor:pointer;opacity:0.5;"
+            disabled>
+            Continue
+          </button>
+          <button id="consent-decline"
+            style="background:#6c757d;color:white;padding:12px 24px;
+                   border:none;border-radius:6px;font-size:16px;cursor:pointer;margin-left:12px;">
+            Decline
+          </button>
         </div>
-      `;
-    });
-  }
-};
-    
-  const timeline = [consent];
+      `,
+      choices: "NO_KEYS",
+      on_load: () => {
+        const checkbox = document.getElementById("consent-checkbox");
+        const continueBtn = document.getElementById("consent-continue");
+        const declineBtn = document.getElementById("consent-decline");
+
+        checkbox.addEventListener("change", () => {
+          if (checkbox.checked) {
+            continueBtn.disabled = false;
+            continueBtn.style.opacity = "1";
+            continueBtn.style.cursor = "pointer";
+          } else {
+            continueBtn.disabled = true;
+            continueBtn.style.opacity = "0.5";
+            continueBtn.style.cursor = "not-allowed";
+          }
+        });
+
+        continueBtn.addEventListener("click", () => {
+          if (checkbox.checked) {
+            jsPsych.data.addProperties({ consented: true });
+            jsPsych.finishTrial();
+          }
+        });
+
+        declineBtn.addEventListener("click", () => {
+          jsPsych.data.addProperties({ consented: false });
+          document.getElementById("jspsych-target").innerHTML = `
+            <div style="display:flex;align-items:center;justify-content:center;min-height:80vh;">
+              <h2 style="font-size:24px;color:#333;">Thank you</h2>
+            </div>
+          `;
+        });
+      }
+    };
+
+    // *** CHANGED: pavlovia_init added to start of timeline ***
+    const timeline = [pavlovia_init, consent];
 
     // === Intro ===
     timeline.push({
@@ -137,10 +131,7 @@ const consent = {
       "continuous_0.670408510834097_.csv"
     ];
 
-    // Randomly choose binary or continuous condition
     const condition = Math.random() < 0.5 ? "binary" : "continuous";
-
- 
     const candidates = dataset_files.filter(f => f.startsWith(condition));
     const chosen_file = jsPsych.randomization.sampleWithoutReplacement(candidates, 1)[0];
 
@@ -166,69 +157,67 @@ const consent = {
         </div></div>`
     });
 
-    // practice round - can modify the wording / instructions as needed 
-timeline.push({
-  type: jsPsychHtmlKeyboardResponse,
-  stimulus:
-    `<div class="center-screen"><div>
-      <h2>Practice Round</h2>
-      <p>Before we begin the actual experiment, there will be a brief practice round. </p>
-      <p>You will see <strong>5 data points</strong>, displayed the same way as in the real experiment.</p>
-      <p>This is just to help you get familiar with how the data will appear.</p>
-      <p>Press any key to start the practice.</p>
-    </div></div>`
-});
-
-
-const practiceYears = [1, 2, 3, 4, 5]; // 5 years
-
-if (is_binary) {
-  const practiceData = [
-    { year: 1, value: 'YES' },
-    { year: 2, value: 'YES' },
-    { year: 3, value: 'NO' },
-    { year: 4, value: 'YES' },
-    { year: 5, value: 'NO' }
-  ];
-  
-  practiceData.forEach((item, index) => {
+    // Practice round
     timeline.push({
       type: jsPsychHtmlKeyboardResponse,
-      stimulus: `<div class="center-screen"><div>Year: ${item.year} | Lake Freeze: ${item.value}</div></div>`,
-      choices: "NO_KEYS",
-      trial_duration: 2000,
-      data: { trial_type: "practice_datapoint", index, year: item.year, value: item.value }
+      stimulus:
+        `<div class="center-screen"><div>
+          <h2>Practice Round</h2>
+          <p>Before we begin the actual experiment, there will be a brief practice round. </p>
+          <p>You will see <strong>5 data points</strong>, displayed the same way as in the real experiment.</p>
+          <p>This is just to help you get familiar with how the data will appear.</p>
+          <p>Press any key to start the practice.</p>
+        </div></div>`
     });
-  });
-  
-} else {
 
-  const practiceTemps = [27.0, 27.1, 26.9, 27.4, 28.1]; 
-  
-  practiceYears.forEach((year, index) => {
-    const temp = practiceTemps[index];
+    const practiceYears = [1, 2, 3, 4, 5];
+
+    if (is_binary) {
+      const practiceData = [
+        { year: 1, value: 'YES' },
+        { year: 2, value: 'YES' },
+        { year: 3, value: 'NO' },
+        { year: 4, value: 'YES' },
+        { year: 5, value: 'NO' }
+      ];
+
+      practiceData.forEach((item, index) => {
+        timeline.push({
+          type: jsPsychHtmlKeyboardResponse,
+          stimulus: `<div class="center-screen"><div>Year: ${item.year} | Lake Freeze: ${item.value}</div></div>`,
+          choices: "NO_KEYS",
+          trial_duration: 2000,
+          data: { trial_type: "practice_datapoint", index, year: item.year, value: item.value }
+        });
+      });
+
+    } else {
+      const practiceTemps = [27.0, 27.1, 26.9, 27.4, 28.1];
+
+      practiceYears.forEach((year, index) => {
+        const temp = practiceTemps[index];
+        timeline.push({
+          type: jsPsychHtmlKeyboardResponse,
+          stimulus: `<div class="center-screen"><div>Year: ${year} | Avg Temp: ${temp}°F</div></div>`,
+          choices: "NO_KEYS",
+          trial_duration: 2000,
+          data: { trial_type: "practice_datapoint", index, year: year, value: temp }
+        });
+      });
+    }
+
     timeline.push({
       type: jsPsychHtmlKeyboardResponse,
-      stimulus: `<div class="center-screen"><div>Year: ${year} | Avg Temp: ${temp}°F</div></div>`,
-      choices: "NO_KEYS",
-      trial_duration: 2000,
-      data: { trial_type: "practice_datapoint", index, year: year, value: temp }
+      stimulus:
+        `<div class="center-screen"><div>
+          <h2>Practice Complete!</h2>
+          <p>Great! Now you know how the data will be displayed.</p>
+          <p>The real experiment will begin next, showing data from 1981-2020.</p>
+          <p>Remember to pay attention to the overall trend in the data.</p>
+          <p>Press any key to begin the actual experiment.</p>
+        </div></div>`
     });
-  });
-}
 
-
-timeline.push({
-  type: jsPsychHtmlKeyboardResponse,
-  stimulus:
-    `<div class="center-screen"><div>
-      <h2>Practice Complete!</h2>
-      <p>Great! Now you know how the data will be displayed.</p>
-      <p>The real experiment will begin next, showing data from 1981-2020.</p>
-      <p>Remember to pay attention to the overall trend in the data.</p>
-      <p>Press any key to begin the actual experiment.</p>
-    </div></div>`
-});
     // === Load and parse the CSV ===
     fetch(chosen_file)
       .then(r => {
@@ -250,13 +239,12 @@ timeline.push({
 
         if (rows.length === 0) throw new Error(`No data rows found between ${YEAR_START} and ${YEAR_END}.`);
 
-        const yearsAvailable = rows.map(r => parseInt(r[0], 10));
         const randomIndex = Math.floor(Math.random() * 21) + 9;
 
         const attentionWords = ["apple", "house", "tree", "book", "dog"];
         const attentionWord  = attentionWords[Math.floor(Math.random() * attentionWords.length)];
 
-        // sequential datapoints
+        // Sequential datapoints
         rows.forEach((row, index) => {
           const year  = row[0];
           const value = row[1];
@@ -311,8 +299,6 @@ timeline.push({
           data: { trial_type: "perception_ratings" }
         });
 
-    
-
         // Attention recall
         timeline.push({
           type: jsPsychSurveyText,
@@ -328,42 +314,21 @@ timeline.push({
           }
         });
 
+        // *** CHANGED: debrief page (no MongoDB fetch) ***
+        timeline.push({
+          type: jsPsychHtmlKeyboardResponse,
+          stimulus: `
+            <iframe src="debriefing.html"
+              style="width:100%;height:100vh;border:none;"></iframe>
+          `,
+          choices: "NO_KEYS",
+          trial_duration: 5000
+        });
 
-        // debrief and save (auto);remove the connection to acknowledgement button
-// debrief and save (auto)
-timeline.push({
-  type: jsPsychHtmlKeyboardResponse,
-  stimulus: `
-    <iframe src="debriefing.html"
-      style="width:100%;height:100vh;border:none;"></iframe>
-  `,
-  choices: "NO_KEYS",
-  on_load: async () => {
-    const payload = {
-      meta: {
-        condition: is_binary ? "binary" : "continuous",
-        dataset_file: chosen_file,
-        finished_at: new Date().toISOString()
-      },
-      json: jsPsych.data.get().values(),
-      csv: jsPsych.data.get().csv()
-    };
+        // *** CHANGED: pavlovia_finish uploads all data to Pavlovia automatically ***
+        timeline.push(pavlovia_finish);
 
-    try {
-      await fetch("/experiment-data", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      });
-      console.log("✅ Data saved successfully to MongoDB");
-    } catch (err) {
-      console.error("❌ Save failed:", err);
-      alert("Data could not be saved. Please contact the researcher.");
-    }
-  }
-});
-
-jsPsych.run(timeline);
+        jsPsych.run(timeline);
 
       })
       .catch(error => {
