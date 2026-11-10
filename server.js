@@ -41,11 +41,11 @@ app.use(express.static(__dirname)); // serve root-level files (e.g., sequential_
 
 // --- Page Routes (root serves your experiment directly from repo root)
 app.get("/", (_req, res) =>
-  res.sendFile(path.join(__dirname, "sequential_climate.html"))
+  res.sendFile(path.join(__dirname, "index.html"))
 );
 
 app.get("/experiment", (_req, res) =>
-  res.sendFile(path.join(__dirname, "sequential_climate.html"))
+  res.sendFile(path.join(__dirname, "index.html"))
 );
 
 // Simple finish page (use a file if you add one later)
